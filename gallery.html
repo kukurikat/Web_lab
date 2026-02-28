@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gallery - Photography Course</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <ul>
+          <li><a href="index.html">Lessons</a></li>
+          <li><a href="gallery.html">Gallery</a></li>
+          <li><a href="progress.html">My Progress</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <section id="gallery">
+        <h2>Gallery</h2>
+        <div class="controls">
+          <input type="file" id="photoInput" accept="image/*" />
+          <button id="addPhotoBtn">Upload Photo</button>
+        </div>
+        <div id="galleryContainer" class="grid-container"></div>
+      </section>
+    </main>
+    <footer>
+      <p>Contact us: support@photocourse.com | +1 234 567 8900</p>
+    </footer>
+
+    <script>
+      const photoInput = document.getElementById("photoInput");
+      const addPhotoBtn = document.getElementById("addPhotoBtn");
+      const galleryContainer = document.getElementById("galleryContainer");
+
+      addPhotoBtn.addEventListener("click", () => photoInput.click());
+
+      photoInput.addEventListener("change", function () {
+        const file = this.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const article = document.createElement("article");
+            article.className = "card";
+            article.innerHTML = `<img src="${e.target.result}" alt="Uploaded Photo">`;
+            galleryContainer.appendChild(article);
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    </script>
+  </body>
+</html>
