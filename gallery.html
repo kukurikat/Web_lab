@@ -20,36 +20,43 @@
       <section id="gallery">
         <h2>Gallery</h2>
         <div class="controls">
-          <input type="file" id="photoInput" accept="image/*" />
-          <button id="addPhotoBtn">Upload Photo</button>
+          <button id="openUploadModal" class="btn">Upload Photo</button>
         </div>
+
+        <div class="filters">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="portrait">Portrait</button>
+          <button class="filter-btn" data-filter="landscape">Landscape</button>
+          <button class="filter-btn" data-filter="macro">Macro</button>
+        </div>
+
         <div id="galleryContainer" class="grid-container"></div>
       </section>
     </main>
+
+    <div id="uploadModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Upload New Photo</h2>
+        <form id="uploadForm">
+          <label for="newPhotoType">Select Type:</label>
+          <select id="newPhotoType" required>
+            <option value="portrait">Portrait</option>
+            <option value="landscape">Landscape</option>
+            <option value="macro">Macro</option>
+          </select>
+          <br /><br />
+          <label for="newPhotoFile">Choose Image:</label>
+          <input type="file" id="newPhotoFile" accept="image/*" required />
+          <br /><br />
+          <button type="submit" class="btn">Save to Photos</button>
+        </form>
+      </div>
+    </div>
+
     <footer>
       <p>Contact us: support@photocourse.com | +1 234 567 8900</p>
     </footer>
-
-    <script>
-      const photoInput = document.getElementById("photoInput");
-      const addPhotoBtn = document.getElementById("addPhotoBtn");
-      const galleryContainer = document.getElementById("galleryContainer");
-
-      addPhotoBtn.addEventListener("click", () => photoInput.click());
-
-      photoInput.addEventListener("change", function () {
-        const file = this.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = function (e) {
-            const article = document.createElement("article");
-            article.className = "card";
-            article.innerHTML = `<img src="${e.target.result}" alt="Uploaded Photo">`;
-            galleryContainer.appendChild(article);
-          };
-          reader.readAsDataURL(file);
-        }
-      });
-    </script>
+    <script src="script.js"></script>
   </body>
 </html>
