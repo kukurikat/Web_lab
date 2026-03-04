@@ -339,3 +339,31 @@ footer {
 .delete-btn:hover {
   background: #c0392b;
 }
+
+.auth-container {
+  background: #fff;
+  max-width: 360px;
+  margin: 40px auto;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  text-align: center;
+}
+
+.auth-container input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+
+.auth-container button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  cursor: pointer;
+}
+
+.auth-error {
+  color: #c0392b;
+  margin-bottom: 10px;
+}

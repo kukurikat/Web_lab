@@ -1,50 +1,43 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
-export default function Progress() {
-  const [completedCount, setCompletedCount] = useState(0);
-  const [photosCount, setPhotosCount] = useState(0);
-  const totalLessons = 6;
+const lessonsData = [
+  "Photography Basics",
+  "Shooting Techniques",
+  "Photo Editing",
+  "Portrait Photography",
+  "Landscape Mastery",
+  "Macro World",
+];
+
+export default function Progress({ user }) {
+  const storageKey = `completedLessons_${user.email}`;
+
+  const [completed, setCompleted] = useState([]);
 
   useEffect(() => {
-    const completed =
-      JSON.parse(localStorage.getItem("completedLessons")) || [];
-    const photos = JSON.parse(localStorage.getItem("photosData")) || [];
-    setCompletedCount(completed.length);
-    setPhotosCount(photos.length);
-  }, []);
-
-  const percent = Math.round((completedCount / totalLessons) * 100);
-  const hours = (completedCount * 1.5).toFixed(1);
+    const saved = localStorage.getItem(storageKey);
+    setCompleted(saved ? JSON.parse(saved) : []);
+  }, [storageKey]);
 
   return (
-    <section id="progress-section">
-      <h2>My Learning Statistics</h2>
-      <div className="stats-container">
-        <div className="stat-box">
-          <h3>Overall Course Completion</h3>
-          <div className="progress-bar-bg">
-            <div className="progress-bar-fill" style={{ width: `${percent}%` }}>
-              {percent}%
-            </div>
-          </div>
-        </div>
-        <div className="stat-grid">
-          <div className="stat-item">
-            <h4>Lessons Completed</h4>
-            <p className="stat-number">
-              {completedCount} / {totalLessons}
-            </p>
-          </div>
-          <div className="stat-item">
-            <h4>Hours Watched</h4>
-            <p className="stat-number">{hours} h</p>
-          </div>
-          <div className="stat-item">
-            <h4>Photos Uploaded</h4>
-            <p className="stat-number">{photosCount}</p>
-          </div>
-        </div>
-      </div>
+    <section>
+      <h2>My Progress</h2>
+
+      <p>
+        User: <strong>{user.email}</strong>
+      </p>
+
+      <ul>
+        {lessonsData.map((lesson, index) => (
+          <li key={index}>
+            {completed.includes(index + 1) ? "✅" : "⬜"} {lesson}
+          </li>
+        ))}
+      </ul>
+
+      <p>
+        Completed: {completed.length} / {lessonsData.length}
+      </p>
     </section>
   );
 }

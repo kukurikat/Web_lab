@@ -39,32 +39,44 @@ const lessonsData = [
   },
 ];
 
-export default function Lessons() {
-  const [completed, setCompleted] = useState(
-    () => JSON.parse(localStorage.getItem("completedLessons")) || [],
-  );
+export default function Lessons({ user }) {
+  const storageKey = `completedLessons_${user.email}`;
+
+  const [completed, setCompleted] = useState(() => {
+    const saved = localStorage.getItem(storageKey);
+    return saved ? JSON.parse(saved) : [];
+  });
 
   useEffect(() => {
-    localStorage.setItem("completedLessons", JSON.stringify(completed));
-  }, [completed]);
+    localStorage.setItem(storageKey, JSON.stringify(completed));
+  }, [completed, storageKey]);
 
   const toggleLesson = (id) => {
     setCompleted((prev) =>
-      prev.includes(id) ? prev.filter((lId) => lId !== id) : [...prev, id],
+      prev.includes(id)
+        ? prev.filter((lessonId) => lessonId !== id)
+        : [...prev, id],
     );
   };
 
   return (
     <section id="lessons">
       <h2>Lessons</h2>
+
+      <p className="progress-info">
+        Completed: {completed.length} / {lessonsData.length}
+      </p>
+
       <div className="grid-container">
         {lessonsData.map((lesson) => (
           <article className="card" key={lesson.id}>
             <div className="video-wrapper">
               <img src={lesson.img} alt={lesson.title} />
             </div>
+
             <div className="lesson-header-flex">
               <h3>{lesson.title}</h3>
+
               <label className="custom-checkbox">
                 <input
                   type="checkbox"
@@ -74,7 +86,9 @@ export default function Lessons() {
                 <span className="checkmark"></span>
               </label>
             </div>
+
             <p>{lesson.desc}</p>
+
             <button className="btn">Read Text Material</button>
           </article>
         ))}
