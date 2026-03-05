@@ -1,61 +1,71 @@
 import React, { useState, useEffect } from "react";
 
 export default function Gallery({ user }) {
-  // 🔐 ключ з урахуванням користувача
-  const storageKey = `photos_${user.email}`;
-
-  const [photos, setPhotos] = useState(() => {
-    const saved = localStorage.getItem(storageKey);
-    return saved ? JSON.parse(saved) : [];
-  });
-
+  const [photos, setPhotos] = useState([]);
   const [filter, setFilter] = useState("all");
   const [isModalOpen, setModalOpen] = useState(false);
   const [newType, setNewType] = useState("portrait");
   const [newFile, setNewFile] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // 💾 збереження фото користувача
   useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(photos));
-  }, [photos, storageKey]);
+    const savedPhotos = localStorage.getItem("my_gallery_photos");
+    if (savedPhotos) {
+      setPhotos(JSON.parse(savedPhotos));
+    }
+  }, []);
 
-  // 📤 upload
-  const handleUpload = (e) => {
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleUpload = async (e) => {
     e.preventDefault();
-    if (!newFile) return;
+    if (!newFile) return alert("Будь ласка, виберіть файл!");
+    setLoading(true);
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
+    try {
+      const base64Image = await fileToBase64(newFile);
       const newPhoto = {
         id: Date.now(),
-        src: event.target.result,
+        userId: user?.uid || "guest",
+        imageUrl: base64Image,
         type: newType,
         time: new Date().toLocaleString(),
       };
 
-      setPhotos((prev) => [...prev, newPhoto]);
+      const updatedPhotos = [...photos, newPhoto];
+      setPhotos(updatedPhotos);
+      localStorage.setItem("my_gallery_photos", JSON.stringify(updatedPhotos));
+
       setModalOpen(false);
       setNewFile(null);
-    };
-
-    reader.readAsDataURL(newFile);
+      alert("Фото збережено!");
+    } catch (error) {
+      console.error(error);
+      alert("Помилка при збереженні");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // 🗑 delete
   const deletePhoto = (id) => {
-    setPhotos((prev) => prev.filter((photo) => photo.id !== id));
+    const filtered = photos.filter((p) => p.id !== id);
+    setPhotos(filtered);
+    localStorage.setItem("my_gallery_photos", JSON.stringify(filtered));
   };
 
-  // 🎯 filters
   const filteredPhotos =
     filter === "all" ? photos : photos.filter((p) => p.type === filter);
 
   return (
     <section id="gallery">
-      <h2>Gallery</h2>
-      <p className="user-info">
-        Logged in as <strong>{user.email}</strong>
-      </p>
+      <h2>Local Gallery</h2>
 
       <div className="controls">
         <button onClick={() => setModalOpen(true)} className="btn">
@@ -70,26 +80,24 @@ export default function Gallery({ user }) {
             className={`filter-btn ${filter === f ? "active" : ""}`}
             onClick={() => setFilter(f)}
           >
-            {f.charAt(0).toUpperCase() + f.slice(1)}
+            {f}
           </button>
         ))}
       </div>
 
       <div className="grid-container">
-        {filteredPhotos.length === 0 && <p className="empty">No photos yet</p>}
-
         {filteredPhotos.map((photo) => (
           <article className="card gallery-card" key={photo.id}>
-            <img src={photo.src} alt={photo.type} />
-
+            <img src={photo.imageUrl} alt={photo.type} />
             <div className="photo-info">
               <p>Type: {photo.type}</p>
-              <p>Uploaded: {photo.time}</p>
+              <small>{photo.time}</small>
+              <br />
               <button
-                className="btn delete-btn"
+                className="delete-btn"
                 onClick={() => deletePhoto(photo.id)}
               >
-                Delete
+                Видалити
               </button>
             </div>
           </article>
@@ -97,40 +105,32 @@ export default function Gallery({ user }) {
       </div>
 
       {isModalOpen && (
-        <div className="modal" style={{ display: "block" }}>
+        <div className="modal">
           <div className="modal-content">
             <span className="close" onClick={() => setModalOpen(false)}>
-              &times;
+              ×
             </span>
-
-            <h2>Upload New Photo</h2>
-
+            <h2>Upload Photo</h2>
             <form onSubmit={handleUpload}>
               <select
                 value={newType}
                 onChange={(e) => setNewType(e.target.value)}
-                required
               >
                 <option value="portrait">Portrait</option>
                 <option value="landscape">Landscape</option>
                 <option value="macro">Macro</option>
               </select>
-
               <br />
               <br />
-
               <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setNewFile(e.target.files[0])}
-                required
               />
-
               <br />
               <br />
-
-              <button type="submit" className="btn">
-                Save to Photos
+              <button type="submit" className="btn" disabled={loading}>
+                {loading ? "Saving..." : "Save Locally"}
               </button>
             </form>
           </div>

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { db } from "./firebase";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 const lessonsData = [
   {
@@ -40,31 +42,41 @@ const lessonsData = [
 ];
 
 export default function Lessons({ user }) {
-  const storageKey = `completedLessons_${user.email}`;
-
-  const [completed, setCompleted] = useState(() => {
-    const saved = localStorage.getItem(storageKey);
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [completed, setCompleted] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(completed));
-  }, [completed, storageKey]);
+    if (!user) return;
+    const loadProgress = async () => {
+      const ref = doc(db, "progress", user.uid);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        setCompleted(snap.data().lessons || []);
+      }
+    };
+    loadProgress();
+  }, [user]);
 
-  const toggleLesson = (id) => {
-    setCompleted((prev) =>
-      prev.includes(id)
-        ? prev.filter((lessonId) => lessonId !== id)
-        : [...prev, id],
-    );
+  const toggleLesson = async (id) => {
+    const updated = completed.includes(id)
+      ? completed.filter((l) => l !== id)
+      : [...completed, id];
+
+    setCompleted(updated);
+
+    // Зберігаємо в Firebase
+    await setDoc(doc(db, "progress", user.uid), {
+      lessons: updated,
+    });
   };
 
   return (
     <section id="lessons">
       <h2>Lessons</h2>
-
       <p className="progress-info">
-        Completed: {completed.length} / {lessonsData.length}
+        Completed:{" "}
+        <strong>
+          {completed.length} / {lessonsData.length}
+        </strong>
       </p>
 
       <div className="grid-container">
@@ -76,7 +88,7 @@ export default function Lessons({ user }) {
 
             <div className="lesson-header-flex">
               <h3>{lesson.title}</h3>
-
+              {/* Використовуємо твої кастомні класи з CSS */}
               <label className="custom-checkbox">
                 <input
                   type="checkbox"
@@ -88,7 +100,6 @@ export default function Lessons({ user }) {
             </div>
 
             <p>{lesson.desc}</p>
-
             <button className="btn">Read Text Material</button>
           </article>
         ))}
