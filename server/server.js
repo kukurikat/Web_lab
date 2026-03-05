@@ -11,12 +11,18 @@ let serviceAccount;
 if (process.env.FIREBASE_CONFIG) {
   serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
 } else {
-  serviceAccount = require("./serviceAccountKey.json");
+  try {
+    serviceAccount = require("./serviceAccountKey.json");
+  } catch (e) {
+    serviceAccount = null;
+  }
 }
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+if (serviceAccount) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
 
 const db = admin.firestore();
 
