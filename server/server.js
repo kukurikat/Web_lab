@@ -4,6 +4,8 @@ const cors = require("cors");
 const path = require("path");
 
 const app = express();
+
+// ФІНАЛЬНИЙ CSP: Додано домени для аутентифікації, статики та скриптів Google
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
@@ -11,10 +13,12 @@ app.use((req, res, next) => {
       "connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.googleapis.com https://*.firebaseio.com; " +
       "img-src 'self' data:; " +
       "style-src 'self' 'unsafe-inline'; " +
-      "script-src 'self' 'unsafe-inline' https://apis.google.com;",
+      "script-src 'self' 'unsafe-inline' https://apis.google.com https://www.gstatic.com https://www.google.com; " +
+      "frame-src 'self' https://*.firebaseapp.com https://www.google.com;",
   );
   next();
 });
+
 app.use(cors());
 app.use(express.json());
 
