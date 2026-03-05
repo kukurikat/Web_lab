@@ -5,15 +5,16 @@ const path = require("path");
 
 const app = express();
 
-// ФІНАЛЬНИЙ CSP: Додано домени для аутентифікації, статики та скриптів Google
+// МАКСИМАЛЬНИЙ CSP: Додано всі сервіси Google для аутентифікації та статики
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
     "default-src 'self'; " +
-      "connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.googleapis.com https://*.firebaseio.com; " +
-      "img-src 'self' data:; " +
-      "style-src 'self' 'unsafe-inline'; " +
+      "connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.googleapis.com https://*.firebaseio.com https://*.firebase.com; " +
+      "img-src 'self' data: https:; " +
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
       "script-src 'self' 'unsafe-inline' https://apis.google.com https://www.gstatic.com https://www.google.com; " +
+      "font-src 'self' https://fonts.gstatic.com; " +
       "frame-src 'self' https://*.firebaseapp.com https://www.google.com;",
   );
   next();
@@ -22,7 +23,6 @@ app.use((req, res, next) => {
 app.use(cors());
 app.use(express.json());
 
-// Логіка підключення Firebase (через змінні Render або файл)
 let serviceAccount;
 if (process.env.FIREBASE_CONFIG) {
   serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
@@ -42,15 +42,13 @@ if (serviceAccount) {
 
 const db = admin.firestore();
 
-// Роздача статичних файлів твого React-сайту
+// Роздача статики з папки build
 app.use(express.static(path.join(__dirname, "../build")));
 
-// API для перевірки статусу сервера
 app.get("/api/status", (req, res) => {
   res.json({ status: "Server is online" });
 });
 
-// API для завантаження прогресу користувача
 app.get("/api/progress/:userId", async (req, res) => {
   try {
     const userRef = db.collection("progress").doc(req.params.userId);
@@ -62,7 +60,6 @@ app.get("/api/progress/:userId", async (req, res) => {
   }
 });
 
-// API для збереження прогресу користувача
 app.post("/api/progress", async (req, res) => {
   try {
     const { userId, lessons } = req.body;
@@ -73,7 +70,7 @@ app.post("/api/progress", async (req, res) => {
   }
 });
 
-// Універсальний маршрут для React Router (виправляє PathError на Node v22)
+// Універсальний маршрут (/.*/) для Node v22
 app.get(/.*/, (req, res) => {
   res.sendFile(path.join(__dirname, "../build", "index.html"));
 });
