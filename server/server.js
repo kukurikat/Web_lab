@@ -32,7 +32,28 @@ app.get("/api/status", (req, res) => {
   res.json({ status: "Server is online" });
 });
 
-app.get("*", (req, res) => {
+app.get("/api/progress/:userId", async (req, res) => {
+  try {
+    const userRef = db.collection("progress").doc(req.params.userId);
+    const doc = await userRef.get();
+    if (!doc.exists) return res.json({ lessons: [] });
+    res.json(doc.data());
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
+app.post("/api/progress", async (req, res) => {
+  try {
+    const { userId, lessons } = req.body;
+    await db.collection("progress").doc(userId).set({ lessons });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
+app.get("/*", (req, res) => {
   res.sendFile(path.join(__dirname, "../build", "index.html"));
 });
 
