@@ -32,7 +32,7 @@ app.get("/api/status", (req, res) => {
   res.json({ status: "Server is online" });
 });
 
-app.get("(.*)", (req, res) => {
+app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../build", "index.html"));
 });
 
